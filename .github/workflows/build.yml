@@ -4,6 +4,9 @@ on:
   push:
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -21,8 +24,18 @@ jobs:
         run: |
           chmod +x gradlew
           ./gradlew assembleDebug --no-daemon
+          cp app/build/outputs/apk/debug/app-debug.apk BulkMailer.apk
 
       - uses: actions/upload-artifact@v4
         with:
           name: BulkMailer-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: BulkMailer.apk
+
+      # Publishes the APK at a fixed link: /releases/latest/download/BulkMailer.apk
+      - name: Publish download link
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          name: Bulk Mailer (latest build)
+          make_latest: true
+          files: BulkMailer.apk
